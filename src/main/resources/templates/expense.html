@@ -1,66 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Manage Expenses</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for Visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
 
-<head>
-    <title>Add Expense</title>
-</head>
+    <nav class="bg-indigo-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between h-16 items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-wallet text-2xl"></i>
+                <span class="font-bold text-xl tracking-tight">Expense Tracker</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a th:href="@{/dashboard}" class="hover:bg-indigo-700 px-3 py-2 rounded-md text-sm">Dashboard</a>
+                <a th:href="@{/expense}" class="hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-semibold">Expenses</a>
+                <a th:href="@{/signin}" class="bg-indigo-800 hover:bg-indigo-900 px-3 py-2 rounded-md text-sm font-semibold">Logout</a>
+            </div>
+        </div>
+    </nav>
 
-<body>
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Add Expense Form -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-fit">
+            <h2 class="text-xl font-bold text-slate-900 mb-4">Add New Expense</h2>
+            <form th:action="@{/expense}" th:object="${expense}" method="post" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Title</label>
+                    <input type="text" th:field="*{description}" placeholder="e.g. Grocery Shopping" required
+                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Amount ($)</label>
+                    <input type="number" step="0.01" th:field="*{amount}" placeholder="0.00" required
+                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Date</label>
+                    <input type="date" th:field="*{date}" required
+                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg shadow transition">
+                    Save Expense
+                </button>
+            </form>
+        </div>
 
-    <h1>💸 Add Expense</h1>
-
-    <form action="/expense" method="post">
-
-        <label>Amount:</label>
-        <input type="number" name="amount" step="0.01" required>
-
-        <br><br>
-
-        <label>Date:</label>
-        <input type="date" name="date" required>
-
-        <br><br>
-
-        <label>Category:</label>
-        <input type="text" name="category" required>
-
-        <br><br>
-
-        <label>Payment Method:</label>
-        <select name="paymentMethod" required>
-            <option value="">Select</option>
-            <option value="Cash">Cash</option>
-            <option value="UPI">UPI</option>
-            <option value="Card">Card</option>
-            <option value="Bank Transfer">Bank Transfer</option>
-        </select>
-
-        <br><br>
-
-        <label>Description:</label>
-        <input type="text" name="description">
-
-        <br><br>
-
-        <button type="submit">Save Expense</button>
-
-    </form>
-
-    <br>
-
-    <a href="/dashboard">Back to Dashboard</a>
-
+        <!-- Expenses List -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="p-6 border-b border-slate-100">
+                <h2 class="text-xl font-bold text-slate-900">Recent Transactions</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
+                            <th class="p-4">Description</th>
+                            <th class="p-4">Date</th>
+                            <th class="p-4">Amount</th>
+                            <th class="p-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm">
+                        <tr th:each="exp : ${expenses}" class="hover:bg-slate-50/50">
+                            <td class="p-4 font-medium text-slate-900" th:text="${exp.description}">Groceries</td>
+                            <td class="p-4 text-slate-500" th:text="${exp.date}">2026-10-01</td>
+                            <td class="p-4 font-semibold text-slate-900" th:text="'$' + ${exp.amount}">$45.00</td>
+                            <td class="p-4 text-right space-x-2">
+                                <a th:href="@{/expense/delete/{id}(id=${exp.id})}" class="text-rose-600 hover:text-rose-800 transition">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
 </body>
-
 </html>
