@@ -1,44 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Dashboard - Personal Expense Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for Visualizations -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
 
-<head>
-    <title>My Expense Tracker</title>
-</head>
+    <!-- Top Navigation -->
+    <nav class="bg-indigo-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-16 items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-wallet text-2xl"></i>
+                <span class="font-bold text-xl tracking-tight">Expense Tracker</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a th:href="@{/dashboard}" class="hover:bg-indigo-700 px-3 py-2 rounded-md font-medium text-sm">Dashboard</a>
+                <a th:href="@{/expense}" class="hover:bg-indigo-700 px-3 py-2 rounded-md font-medium text-sm">Expenses</a>
+                <a th:href="@{/signin}" class="bg-indigo-800 hover:bg-indigo-900 px-3 py-2 rounded-md text-sm font-semibold transition">Logout</a>
+            </div>
+        </div>
+    </nav>
 
-<body>
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-slate-900">Financial Dashboard</h1>
+            <a th:href="@{/expense}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg shadow transition flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> Add Expense
+            </a>
+        </div>
 
-    <h1>💰 My Expense Tracker</h1>
+        <!-- Metric Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Total Spent</p>
+                    <p class="text-3xl font-extrabold text-slate-900 mt-1" th:text="${totalSpent}">$0.00</p>
+                </div>
+                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-credit-card"></i>
+                </div>
+            </div>
 
-    <h2>
-        Welcome, <span th:text="${username}"></span>! 👋
-    </h2>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Total Transactions</p>
+                    <p class="text-3xl font-extrabold text-slate-900 mt-1" th:text="${totalCount}">0</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+            </div>
 
-    <p>You are successfully logged in.</p>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Monthly Status</p>
+                    <p class="text-3xl font-extrabold text-emerald-600 mt-1">On Track</p>
+                </div>
+                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+            </div>
+        </div>
 
-    <hr>
+        <!-- Section: Charts & Summary -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 lg:col-span-2">
+                <h2 class="text-lg font-bold text-slate-900 mb-4">Expense Categories</h2>
+                <div class="h-64 flex items-center justify-center">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+            </div>
 
-    <h3>Dashboard</h3>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                <h2 class="text-lg font-bold text-slate-900 mb-4">Quick Actions</h2>
+                <div class="space-y-3">
+                    <a th:href="@{/expense}" class="block w-full text-center py-2.5 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition">
+                        View All Transactions
+                    </a>
+                    <button class="w-full text-center py-2.5 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition">
+                        Export Report (CSV)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
 
-    <p>Income: ₹0</p>
-    <p>Expenses: ₹0</p>
-    <p>Balance: ₹0</p>
-
-    <br>
-
-    <a href="/expense">
-        <button>Add Expense</button>
-    </a>
-
+    <script>
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Food & Dining', 'Utilities', 'Entertainment', 'Shopping', 'Other'],
+                datasets: [{
+                    data: [30, 20, 15, 25, 10],
+                    backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#64748b']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    </script>
 </body>
 </html>
